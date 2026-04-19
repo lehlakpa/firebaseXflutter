@@ -1,1 +1,9 @@
-# Register Page Enhancement TODO&#10;&#10;## Completed: []&#10;## In Progress: []&#10;## Pending:&#10;- [ ] 1. Update pubspec.yaml with cloud_firestore and geolocator dependencies&#10;- [ ] 2. Run `flutter pub get`&#10;- [ ] 3. Update lib/core/validators.dart with new validators (contactNumber, province, tole)&#10;- [ ] 4. Update lib/services/auth_service.dart to save user data to Firestore&#10;- [ ] 5. Update lib/pages/register_page.dart with province dropdown, tole field, improved UI&#10;- [ ] 6. Test registration flow&#10;- [ ] 7. Optional: Add Google Maps integration for location picker
+# Task: Show all registered details in profile page
+
+## Steps to complete (Approved Plan):
+- [x] Step 1: Update lib/pages/profile_page.dart to fetch and display all user details (email, contactNumber, province, tole) from Firestore users/{uid}.\n  - Used FutureBuilder (StatelessWidget).\n  - Added _buildProfileField helper.\n  - Styled cards with icons.\n  - Loading/error/null user handled.\n  - Firestore import added.
+- [ ] Step 2: Test changes - Run `flutter run`, register new user, verify profile shows all fields.
+- [ ] Step 3: Complete task.
+
+Current progress: Starting implementation.
+
