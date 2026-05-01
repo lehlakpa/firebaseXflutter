@@ -191,7 +191,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Expanded(
                     flex: 2,
                     child: DropdownButtonFormField<String>(
-                      value: _province.isEmpty ? null : _province,
+                      initialValue: _province.isEmpty ? null : _province,
                       validator: Validators.province,
                       decoration: _inputStyle("Province", Icons.map_outlined),
                       items:
