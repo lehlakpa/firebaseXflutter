@@ -1,9 +1,7 @@
-# Task: Show all registered details in profile page
+# Task: Add left space to PREMIUM Text in home_page.dart
 
-## Steps to complete (Approved Plan):
-- [x] Step 1: Update lib/pages/profile_page.dart to fetch and display all user details (email, contactNumber, province, tole) from Firestore users/{uid}.\n  - Used FutureBuilder (StatelessWidget).\n  - Added _buildProfileField helper.\n  - Styled cards with icons.\n  - Loading/error/null user handled.\n  - Firestore import added.
-- [ ] Step 2: Test changes - Run `flutter run`, register new user, verify profile shows all fields.
-- [ ] Step 3: Complete task.
-
-Current progress: Starting implementation.
+## Steps:
+- [ ] 1. Create TODO.md (current)
+- [x] 2. Edit lib/pages/home_page.dart to add left padding to PREMIUM Text
+- [x] 3. Verify change and complete task
 

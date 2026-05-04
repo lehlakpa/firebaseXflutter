@@ -1,7 +1,9 @@
+//import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'cart_page.dart'; // Ensure these exist
 import 'profile_page.dart';
+import 'orders_page.dart'; // Ensure these exist
 
 class BottomNavigationPage extends StatefulWidget {
   const BottomNavigationPage({super.key});
@@ -15,8 +17,9 @@ class _BottomNavigationPageState extends State<BottomNavigationPage> {
 
   final List<Widget> _pages = const [
     HomePage(),
-    CartPage(), // Replace with actual cart page
-    ProfilePage(), // Replace with actual profile page
+    CartPage(),
+    OrdersPage(),
+    ProfilePage(),
   ];
 
   @override
@@ -30,12 +33,12 @@ class _BottomNavigationPageState extends State<BottomNavigationPage> {
         height: 85,
         margin: const EdgeInsets.all(16), // Floating effect
         decoration: BoxDecoration(
-          color: const Color(0xFF121721).withOpacity(0.95), // Slate Midnight
+          color: const Color(0xF20E0F13), // Slate Midnight 95% opacity
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: const Color(0x0DFFFFFF)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.4),
+              color: const Color(0x66444444),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -45,7 +48,7 @@ class _BottomNavigationPageState extends State<BottomNavigationPage> {
           borderRadius: BorderRadius.circular(30),
           child: NavigationBarTheme(
             data: NavigationBarThemeData(
-              indicatorColor: const Color(0xFFFFB300).withOpacity(0.15),
+              indicatorColor: const Color(0x26FFB300),
               labelTextStyle: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
                   return const TextStyle(
@@ -85,6 +88,12 @@ class _BottomNavigationPageState extends State<BottomNavigationPage> {
                   icon: Icon(Icons.shopping_cart_outlined),
                   selectedIcon: Icon(Icons.shopping_cart_rounded),
                   label: "Cart",
+                ),
+
+                NavigationDestination(
+                  icon: Icon(Icons.shopping_bag_outlined),
+                  selectedIcon: Icon(Icons.shopping_bag_rounded),
+                  label: "Orders",
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.person_outline),

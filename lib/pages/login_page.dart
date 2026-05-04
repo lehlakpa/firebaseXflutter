@@ -181,31 +181,6 @@ class _LoginPageState extends State<LoginPage> {
                       ),
 
                 const SizedBox(height: 20),
-                // 🔹 Divider
-                Row(
-                  children: const [
-                    Expanded(child: Divider()),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Text("OR"),
-                    ),
-                    Expanded(child: Divider()),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                // 🔹 Social Buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _socialButton("Google", Icons.g_mobiledata),
-                    _socialButton("Apple", Icons.apple),
-                  ],
-                ),
-
-                const SizedBox(height: 30),
-
                 // 🔹 Register
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -258,23 +233,6 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-      ),
-    );
-  }
-
-  // 🔹 Social Button
-  Widget _socialButton(String text, IconData icon) {
-    return Container(
-      width: 140,
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 4)],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [Icon(icon), const SizedBox(width: 8), Text(text)],
       ),
     );
   }

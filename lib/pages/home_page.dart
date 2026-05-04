@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 // Import your details screen here
 import 'details_screen.dart';
+import '../widgets/banner_slider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,8 +13,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int currentIndex = 0;
-
   // List of PageControllers for each product image carousel
   late List<PageController> productPageControllers;
 
@@ -35,11 +34,6 @@ class _HomePageState extends State<HomePage> {
     }
     super.dispose();
   }
-
-  final List<String> banners = [
-    "https://images.unsplash.com/photo-1585386959984-a41552262c6a",
-    "https://images.unsplash.com/photo-1518444028785-8c4b2c0a5c0d",
-  ];
 
   final products = [
     {
@@ -98,12 +92,23 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 20),
                   _buildAnimatedHeader(),
                   const SizedBox(height: 20),
-                  _buildBannerSlider(),
-                  const SizedBox(height: 12),
-                  _buildDotIndicators(),
+                  BannerSlider(
+                    banners: const [
+                      "https://images.unsplash.com/photo-1585386959984-a41552262c6a",
+                      "https://images.unsplash.com/photo-1518444028785-8c4b2c0a5c0d",
+                    ],
+                  ),
                   const SizedBox(height: 30),
                   Text(
-                    "FEATURED PRODUCTS",
+                    "FEATURED",
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white70, // Amber Gold
+                    ),
+                  ),
+                  Text(
+                    " PRODUCTS",
                     style: GoogleFonts.montserrat(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -144,79 +149,42 @@ class _HomePageState extends State<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "PEAK PREMIUM",
+          "PEAK",
           style: GoogleFonts.montserrat(
             fontSize: 32,
             fontWeight: FontWeight.w900,
             color: Colors.white,
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.only(left: 9.0),
+          child: Text(
+            "PREMIUM",
+            style: GoogleFonts.montserrat(
+              letterSpacing: 1.5,
+              fontSize: 32,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+          ),
+        ),
         Text(
           "AUDIO",
           style: GoogleFonts.montserrat(
-            fontSize: 32,
+            fontSize: 36,
             fontWeight: FontWeight.w900,
             color: const Color(0xFFFFB300), // Amber Gold
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildBannerSlider() {
-    return SizedBox(
-      height: 200,
-      child: PageView.builder(
-        itemCount: banners.length,
-        controller: PageController(viewportFraction: 0.95),
-        onPageChanged: (index) => setState(() => currentIndex = index),
-        itemBuilder: (context, index) {
-          return AnimatedScale(
-            scale: currentIndex == index ? 1.0 : 0.95,
-            duration: const Duration(milliseconds: 400),
-            child: Container(
-              margin: const EdgeInsets.only(right: 10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                image: DecorationImage(
-                  image: NetworkImage(banners[index]),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
-                  gradient: const LinearGradient(
-                    colors: [Colors.black, Colors.transparent],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildDotIndicators() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(banners.length, (index) {
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: currentIndex == index ? 24 : 8,
-          height: 6,
-          decoration: BoxDecoration(
-            color: currentIndex == index
-                ? const Color(0xFFFFB300)
-                : Colors.white24,
-            borderRadius: BorderRadius.circular(10),
+        Text(
+          "Buy Now, Pay Later",
+          style: GoogleFonts.montserrat(
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+            color: Colors.white70, // Amber Gold
           ),
-        );
-      }),
+        ),
+      ],
     );
   }
 
@@ -241,10 +209,10 @@ class _HomePageState extends State<HomePage> {
           decoration: BoxDecoration(
             color: const Color(0xFF121721), // Slate Midnight
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            border: Border.all(color: const Color(0x0DFFFFFF)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: const Color(0x33333333),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -368,9 +336,9 @@ class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
         height: 50,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
+          color: const Color(0x14FFFFFF),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white10),
+          border: Border.all(color: const Color(0x1AFFFFFF)),
         ),
         child: Row(
           children: [
