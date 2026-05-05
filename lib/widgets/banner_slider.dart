@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../models/banner_model.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class BannerSlider extends StatefulWidget {
-  final List<String> banners;
+  final List<BannerModel> banners;
 
   const BannerSlider({super.key, required this.banners});
 
@@ -27,6 +29,8 @@ class _BannerSliderState extends State<BannerSlider> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.banners.isEmpty) return const SizedBox.shrink();
+
     return Column(
       children: [
         SizedBox(
@@ -40,6 +44,7 @@ class _BannerSliderState extends State<BannerSlider> {
               });
             },
             itemBuilder: (context, index) {
+              final banner = widget.banners[index];
               return AnimatedScale(
                 scale: _currentIndex == index ? 1.0 : 0.95,
                 duration: const Duration(milliseconds: 400),
@@ -48,15 +53,18 @@ class _BannerSliderState extends State<BannerSlider> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(28),
                     image: DecorationImage(
-                      image: NetworkImage(widget.banners[index]),
+                      image: NetworkImage(banner.image),
                       fit: BoxFit.cover,
                     ),
                   ),
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(28),
-                      gradient: const LinearGradient(
-                        colors: [Colors.black, Colors.transparent],
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withOpacity(0.4),
+                          Colors.transparent,
+                        ],
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                       ),

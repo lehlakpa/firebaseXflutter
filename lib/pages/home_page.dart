@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Import your details screen here
 import 'details_screen.dart';
 import '../widgets/banner_slider.dart';
+import '../../models/product_model.dart';
+import '../../models/banner_model.dart';
+import '../../services/firestore_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,78 +15,20 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // List of PageControllers for each product image carousel
-  late List<PageController> productPageControllers;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize PageControllers for each product
-    productPageControllers = List.generate(
-      products.length,
-      (index) => PageController(),
-    );
-  }
-
-  @override
-  void dispose() {
-    // Dispose all PageControllers
-    for (var controller in productPageControllers) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  final products = [
-    {
-      "title": "G522 Lightspeed",
-      "price": "169.99",
-      "image":
-          "https://resource.logitechg.com/w_800,c_limit,q_auto,f_auto/content/dam/gaming/en/products/g522/g522-gallery-1.png",
-      "image2":
-          "https://resource.logitechg.com/w_800,c_limit,q_auto,f_auto/content/dam/gaming/en/products/g522/g522-gallery-2.png",
-    },
-    {
-      "title": "G733 Lightspeed",
-      "price": "119.00",
-      "image":
-          "https://resource.logitechg.com/w_800,c_limit,q_auto,f_auto/content/dam/gaming/en/products/g733/gallery/g733-white-1.png",
-      "image2":
-          "https://resource.logitechg.com/w_800,c_limit,q_auto,f_auto/content/dam/gaming/en/products/g733/gallery/g733-white-2.png",
-    },
-    {
-      "title": "Pro X Wireless",
-      "price": "199.00",
-      "image":
-          "https://resource.logitechg.com/w_800,c_limit,q_auto,f_auto/content/dam/gaming/en/products/pro-x-wireless/pro-x-wireless-gallery-1.png",
-      "image2":
-          "https://resource.logitechg.com/w_800,c_limit,q_auto,f_auto/content/dam/gaming/en/products/pro-x-wireless/pro-x-wireless-gallery-2.png",
-    },
-    {
-      "title": "G435 Lightspeed",
-      "price": "79.99",
-      "image":
-          "https://resource.logitechg.com/w_800,c_limit,q_auto,f_auto/content/dam/gaming/en/products/g435/g435-gallery-white-1.png",
-      "image2":
-          "https://resource.logitechg.com/w_800,c_limit,q_auto,f_auto/content/dam/gaming/en/products/g435/g435-gallery-white-2.png",
-    },
-  ];
+  final FirestoreService firestoreService = FirestoreService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF070A11), // Deeper Midnight
+      backgroundColor: const Color(0xFF070A11),
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            // 🔍 TRACKING SEARCH BAR (Sticky Header)
             SliverPersistentHeader(
               pinned: true,
               delegate: _StickySearchDelegate(),
             ),
-
-            // 🔥 MAIN CONTENT
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverList(
@@ -92,11 +36,29 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 20),
                   _buildAnimatedHeader(),
                   const SizedBox(height: 20),
-                  BannerSlider(
-                    banners: const [
-                      "https://images.unsplash.com/photo-1585386959984-a41552262c6a",
-                      "https://images.unsplash.com/photo-1518444028785-8c4b2c0a5c0d",
-                    ],
+                  StreamBuilder<List<BannerModel>>(
+                    stream: firestoreService.getBannersStream(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox(
+                          height: 200,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      if (snapshot.hasError) {
+                        return const SizedBox(
+                          height: 200,
+                          child: Center(
+                            child: Text(
+                              'Error loading banners',
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                          ),
+                        );
+                      }
+                      final banners = snapshot.data ?? [];
+                      return BannerSlider(banners: banners);
+                    },
                   ),
                   const SizedBox(height: 30),
                   Text(
@@ -104,7 +66,7 @@ class _HomePageState extends State<HomePage> {
                     style: GoogleFonts.montserrat(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white70, // Amber Gold
+                      color: Colors.white70,
                     ),
                   ),
                   Text(
@@ -120,21 +82,56 @@ class _HomePageState extends State<HomePage> {
                 ]),
               ),
             ),
-
-            // 🔳 PRODUCT GRID
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 0.72,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => _buildProductCard(index),
-                  childCount: products.length,
-                ),
+              sliver: StreamBuilder<List<Product>>(
+                stream: firestoreService.getProductsStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.all(50.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    );
+                  }
+                  if (snapshot.hasError) {
+                    return SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(50.0),
+                        child: Center(
+                          child: Text(
+                            'Error: ${snapshot.error}',
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.all(50.0),
+                        child: Center(child: Text('No products available', style: TextStyle(color: Colors.white70))),
+                      ),
+                    );
+                  }
+                  final productsList = snapshot.data!;
+                  return SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 0.72,
+                        ),
+                    delegate: SliverChildBuilderDelegate(
+                      childCount: productsList.length,
+                      (context, index) =>
+                          _buildProductCard(productsList, index),
+                    ),
+                  );
+                },
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 30)),
@@ -173,7 +170,7 @@ class _HomePageState extends State<HomePage> {
           style: GoogleFonts.montserrat(
             fontSize: 36,
             fontWeight: FontWeight.w900,
-            color: const Color(0xFFFFB300), // Amber Gold
+            color: const Color(0xFFFFB300),
           ),
         ),
         Text(
@@ -181,15 +178,17 @@ class _HomePageState extends State<HomePage> {
           style: GoogleFonts.montserrat(
             fontSize: 10,
             fontWeight: FontWeight.w500,
-            color: Colors.white70, // Amber Gold
+            color: Colors.white70,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildProductCard(int index) {
-    final p = products[index];
+  Widget _buildProductCard(List<Product> productsList, int index) {
+    final p = productsList[index];
+    final PageController pageController = PageController();
+
     return RepaintBoundary(
       child: GestureDetector(
         onTap: () {
@@ -197,9 +196,11 @@ class _HomePageState extends State<HomePage> {
             context,
             MaterialPageRoute(
               builder: (context) => DetailPage(
-                title: p["title"]!,
-                price: p["price"]!,
-                image: p["image"]!,
+                title: p.title,
+                price: p.price,
+                image: p.image,
+                image2: p.image1,
+                description: p.description,
               ),
             ),
           );
@@ -207,7 +208,7 @@ class _HomePageState extends State<HomePage> {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFF121721), // Slate Midnight
+            color: const Color(0xFF121721),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: const Color(0x0DFFFFFF)),
             boxShadow: [
@@ -221,35 +222,32 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image carousel with dot indicators
               Expanded(
                 child: Stack(
                   children: [
                     PageView.builder(
-                      controller: productPageControllers[index],
+                      controller: pageController,
                       itemCount: 2,
                       itemBuilder: (context, imgIndex) {
                         return Hero(
-                          tag: p["title"]! + imgIndex.toString(),
+                          tag: '${p.title}$imgIndex',
                           child: Image.network(
-                            imgIndex == 0 ? p["image"]! : p["image2"]!,
+                            imgIndex == 0 ? p.image : p.image1,
                             fit: BoxFit.contain,
                             cacheWidth: 300,
                           ),
                         );
                       },
                     ),
-                    // Dot indicators for product images
                     Positioned(
                       bottom: 8,
                       left: 0,
                       right: 0,
                       child: ListenableBuilder(
-                        listenable: productPageControllers[index],
+                        listenable: pageController,
                         builder: (context, child) {
-                          final pageIndex =
-                              productPageControllers[index].hasClients
-                              ? productPageControllers[index].page?.round() ?? 0
+                          final pageIndex = pageController.hasClients
+                              ? pageController.page?.round() ?? 0
                               : 0;
                           return Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -278,7 +276,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 12),
               Text(
-                p["title"]!,
+                p.title,
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -291,7 +289,7 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "\$${p["price"]}",
+                    "\$${p.price}",
                     style: GoogleFonts.poppins(
                       color: const Color(0xFFFFB300),
                       fontWeight: FontWeight.w700,
@@ -315,7 +313,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// --- STICKY SEARCH BAR DELEGATE ---
 class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get minExtent => 80.0;
@@ -329,7 +326,7 @@ class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     return Container(
-      color: const Color(0xFF070A11), // Match background
+      color: const Color(0xFF070A11),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       alignment: Alignment.center,
       child: Container(

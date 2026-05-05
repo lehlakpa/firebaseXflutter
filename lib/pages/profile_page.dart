@@ -64,14 +64,36 @@ class ProfilePage extends StatelessWidget {
               );
             }
 
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              );
+            }
+
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
 
             if (!snapshot.hasData || !snapshot.data!.exists) {
-              return const Center(
-                child: Text(
-                  'No profile data found. Please complete registration.',
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'No profile data found in Firestore.',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text('UID: ${user.uid}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Please ensure your registration was successful.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               );
             }
