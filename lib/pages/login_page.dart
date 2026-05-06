@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../core/validators.dart';
-import 'register_page.dart';
+import "register_page.dart";
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

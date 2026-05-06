@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'details_screen.dart';
 import '../widgets/banner_slider.dart';
 import '../../models/product_model.dart';
 import '../../models/banner_model.dart';
 import '../../services/firestore_service.dart';
+import '../widgets/status_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,6 +19,59 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final FirestoreService firestoreService = FirestoreService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void> _addToCart({required String productId}) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      StatusDialog.show(
+        context,
+        isSuccess: false,
+        title: 'Login Required',
+        message: 'Please log in to add items to your cart.',
+      );
+      return;
+    }
+
+    final userCartDoc = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('cart')
+        .doc(productId);
+
+    try {
+      await _firestore.runTransaction((tx) async {
+        final snap = await tx.get(userCartDoc);
+        final currentQty = (snap.data()?['quantity'] ?? 0) as num;
+        final nextQty = currentQty.toInt() + 1;
+
+        tx.set(userCartDoc, {
+          'productId': productId,
+          'quantity': nextQty,
+          'addedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      });
+
+      if (!mounted) return;
+      if (!mounted) return;
+      StatusDialog.show(
+        context,
+        isSuccess: true,
+        title: 'Added to Cart',
+        message: 'The item has been added to your cart successfully.',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('Add to cart failed: $e');
+      StatusDialog.show(
+        context,
+        isSuccess: false,
+        title: 'Cart Error',
+        message: 'Failed to add item to cart. Please try again.',
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +168,12 @@ class _HomePageState extends State<HomePage> {
                     return const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.all(50.0),
-                        child: Center(child: Text('No products available', style: TextStyle(color: Colors.white70))),
+                        child: Center(
+                          child: Text(
+                            'No products available',
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                        ),
                       ),
                     );
                   }
@@ -196,6 +257,7 @@ class _HomePageState extends State<HomePage> {
             context,
             MaterialPageRoute(
               builder: (context) => DetailPage(
+                id: p.id,
                 title: p.title,
                 price: p.price,
                 image: p.image,
@@ -295,13 +357,21 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFB300),
-                      borderRadius: BorderRadius.circular(10),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () => _addToCart(productId: p.id),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFB300),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        size: 18,
+                        color: Colors.black,
+                      ),
                     ),
-                    child: const Icon(Icons.add, size: 18, color: Colors.black),
                   ),
                 ],
               ),

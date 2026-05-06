@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../models/banner_model.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class BannerSlider extends StatefulWidget {
   final List<BannerModel> banners;
@@ -62,7 +61,7 @@ class _BannerSliderState extends State<BannerSlider> {
                       borderRadius: BorderRadius.circular(28),
                       gradient: LinearGradient(
                         colors: [
-                          Colors.black.withOpacity(0.4),
+                          Colors.black.withAlpha(102),
                           Colors.transparent,
                         ],
                         begin: Alignment.bottomCenter,

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../widgets/status_dialog.dart';
 
 class DetailPage extends StatefulWidget {
+  final String id;
   final String title;
   final String price;
   final String image;
@@ -10,6 +14,7 @@ class DetailPage extends StatefulWidget {
 
   const DetailPage({
     super.key,
+    required this.id,
     required this.title,
     required this.price,
     required this.image,
@@ -22,12 +27,66 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailPageState extends State<DetailPage> {
+  int _quantity = 1;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+  }
+
+  Future<void> _addToCart() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      StatusDialog.show(
+        context,
+        isSuccess: false,
+        title: 'Login Required',
+        message: 'Please log in to add items to your cart.',
+      );
+      return;
+    }
+
+    final userCartDoc = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('cart')
+        .doc(widget.id);
+
+    try {
+      await _firestore.runTransaction((tx) async {
+        final snap = await tx.get(userCartDoc);
+        final currentQty = (snap.data()?['quantity'] ?? 0) as num;
+        final nextQty = currentQty.toInt() + _quantity;
+
+        tx.set(userCartDoc, {
+          'productId': widget.id,
+          'quantity': nextQty,
+          'addedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      });
+
+      if (!mounted) return;
+      if (!mounted) return;
+      StatusDialog.show(
+        context,
+        isSuccess: true,
+        title: 'Added to Cart',
+        message: '${widget.title} (x$_quantity) has been added to your cart.',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      if (!mounted) return;
+      StatusDialog.show(
+        context,
+        isSuccess: false,
+        title: 'Cart Error',
+        message: 'Failed to add item to cart. Please try again.',
+      );
+    }
   }
 
   @override
@@ -144,9 +203,33 @@ class _DetailPageState extends State<DetailPage> {
                       Text(
                         '\$${widget.price}',
                         style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFFFB300),
                         ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildQtyBtn(Icons.remove, () {
+                            if (_quantity > 1) setState(() => _quantity--);
+                          }),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              _quantity.toString(),
+                              style: GoogleFonts.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          _buildQtyBtn(Icons.add, () {
+                            setState(() => _quantity++);
+                          }),
+                        ],
                       ),
                     ],
                   ),
@@ -162,12 +245,13 @@ class _DetailPageState extends State<DetailPage> {
                     backgroundColor: Colors.amber,
                     padding: const EdgeInsets.all(16),
                   ),
-                  onPressed: () {},
+                  onPressed: _addToCart,
                   child: Text(
                     "Add to Cart",
                     style: GoogleFonts.poppins(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
                 ),
@@ -175,6 +259,22 @@ class _DetailPageState extends State<DetailPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildQtyBtn(IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0x1AFFFFFF)),
+        ),
+        child: Icon(icon, color: const Color(0xFFFFB300), size: 20),
       ),
     );
   }

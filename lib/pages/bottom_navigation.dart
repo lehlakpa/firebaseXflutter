@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'cart_page.dart'; // Ensure these exist
 import 'profile_page.dart';
-import 'orders_page.dart'; // Ensure these exist
+import 'order_page.dart';
 
 class BottomNavigationPage extends StatefulWidget {
   const BottomNavigationPage({super.key});
@@ -18,7 +18,7 @@ class _BottomNavigationPageState extends State<BottomNavigationPage> {
   final List<Widget> _pages = const [
     HomePage(),
     CartPage(),
-    OrdersPage(),
+    OrderPage(),
     ProfilePage(),
   ];
 

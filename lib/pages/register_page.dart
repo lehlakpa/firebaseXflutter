@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../core/validators.dart';
+import '../widgets/status_dialog.dart';
+import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -57,12 +59,13 @@ class _RegisterPageState extends State<RegisterPage> {
 
       await user?.sendEmailVerification();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Account created! Please verify your email."),
-          ),
+        StatusDialog.show(
+          context,
+          isSuccess: true,
+          title: 'Account Created',
+          message: 'Registration successful! Please verify your email before logging in.',
+          onConfirm: () => Navigator.pop(context),
         );
-        Navigator.pop(context);
       }
     } catch (e) {
       _showError(e.toString());
@@ -71,11 +74,11 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.redAccent,
-        content: Text(message.replaceAll("Exception:", "")),
-      ),
+    StatusDialog.show(
+      context,
+      isSuccess: false,
+      title: 'Registration Error',
+      message: message.replaceAll("Exception:", ""),
     );
   }
 
