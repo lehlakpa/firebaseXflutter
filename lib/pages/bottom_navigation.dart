@@ -5,6 +5,8 @@ import 'cart_page.dart'; // Ensure these exist
 import 'profile_page.dart';
 import 'order_page.dart';
 
+import '../core/responsive.dart';
+
 class BottomNavigationPage extends StatefulWidget {
   const BottomNavigationPage({super.key});
 
@@ -30,8 +32,9 @@ class _BottomNavigationPageState extends State<BottomNavigationPage> {
       backgroundColor: const Color(0xFF070A11),
       body: _pages[_currentIndex],
       bottomNavigationBar: Container(
-        height: 85,
-        margin: const EdgeInsets.all(16), // Floating effect
+        height: Responsive(context).bottomNavHeight(),
+        margin: EdgeInsets.all(Responsive(context).s(16)), // Floating effect
+
         decoration: BoxDecoration(
           color: const Color(0xF20E0F13), // Slate Midnight 95% opacity
           borderRadius: BorderRadius.circular(30),

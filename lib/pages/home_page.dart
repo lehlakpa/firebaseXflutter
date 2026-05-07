@@ -9,6 +9,8 @@ import '../../models/product_model.dart';
 import '../../models/banner_model.dart';
 import '../../services/firestore_service.dart';
 import '../widgets/status_dialog.dart';
+import '../widgets/fade_in_slide.dart';
+import '../core/responsive.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -78,125 +80,127 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: const Color(0xFF070A11),
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _StickySearchDelegate(),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  const SizedBox(height: 20),
-                  _buildAnimatedHeader(),
-                  const SizedBox(height: 20),
-                  StreamBuilder<List<BannerModel>>(
-                    stream: firestoreService.getBannersStream(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const SizedBox(
-                          height: 200,
+        child: FadeInSlide(
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _StickySearchDelegate(),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    const SizedBox(height: 20),
+                    _buildAnimatedHeader(),
+                    const SizedBox(height: 20),
+                    StreamBuilder<List<BannerModel>>(
+                      stream: firestoreService.getBannersStream(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const SizedBox(
+                            height: 200,
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        if (snapshot.hasError) {
+                          return const SizedBox(
+                            height: 200,
+                            child: Center(
+                              child: Text(
+                                'Error loading banners',
+                                style: TextStyle(color: Colors.white54),
+                              ),
+                            ),
+                          );
+                        }
+                        final banners = snapshot.data ?? [];
+                        return BannerSlider(banners: banners);
+                      },
+                    ),
+                    const SizedBox(height: 30),
+                    Text(
+                      "FEATURED",
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    Text(
+                      " PRODUCTS",
+                      style: GoogleFonts.montserrat(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.5,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ]),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: StreamBuilder<List<Product>>(
+                  stream: firestoreService.getProductsStream(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.all(50.0),
                           child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-                      if (snapshot.hasError) {
-                        return const SizedBox(
-                          height: 200,
+                        ),
+                      );
+                    }
+                    if (snapshot.hasError) {
+                      return SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(50.0),
                           child: Center(
                             child: Text(
-                              'Error loading banners',
-                              style: TextStyle(color: Colors.white54),
+                              'Error: ${snapshot.error}',
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ),
-                        );
-                      }
-                      final banners = snapshot.data ?? [];
-                      return BannerSlider(banners: banners);
-                    },
-                  ),
-                  const SizedBox(height: 30),
-                  Text(
-                    "FEATURED",
-                    style: GoogleFonts.montserrat(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  Text(
-                    " PRODUCTS",
-                    style: GoogleFonts.montserrat(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.5,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ]),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: StreamBuilder<List<Product>>(
-                stream: firestoreService.getProductsStream(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(50.0),
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                    );
-                  }
-                  if (snapshot.hasError) {
-                    return SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(50.0),
-                        child: Center(
-                          child: Text(
-                            'Error: ${snapshot.error}',
-                            style: const TextStyle(color: Colors.red),
+                        ),
+                      );
+                    }
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.all(50.0),
+                          child: Center(
+                            child: Text(
+                              'No products available',
+                              style: TextStyle(color: Colors.white70),
+                            ),
                           ),
                         ),
+                      );
+                    }
+                    final productsList = snapshot.data!;
+                    final responsive = Responsive(context);
+                    return SliverGrid(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: responsive.gridCrossAxisCount(),
+                        crossAxisSpacing: responsive.s(16),
+                        mainAxisSpacing: responsive.s(16),
+                        childAspectRatio: 0.72,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        childCount: productsList.length,
+                        (context, index) =>
+                            _buildProductCard(productsList, index),
                       ),
                     );
-                  }
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(50.0),
-                        child: Center(
-                          child: Text(
-                            'No products available',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  final productsList = snapshot.data!;
-                  return SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.72,
-                        ),
-                    delegate: SliverChildBuilderDelegate(
-                      childCount: productsList.length,
-                      (context, index) =>
-                          _buildProductCard(productsList, index),
-                    ),
-                  );
-                },
+                  },
+                ),
               ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 30)),
-          ],
+            ],
+          ),
         ),
       ),
     );

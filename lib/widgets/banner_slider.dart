@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../core/responsive.dart';
 import '../../models/banner_model.dart';
 
 class BannerSlider extends StatefulWidget {
@@ -30,10 +32,13 @@ class _BannerSliderState extends State<BannerSlider> {
   Widget build(BuildContext context) {
     if (widget.banners.isEmpty) return const SizedBox.shrink();
 
+    final r = Responsive(context);
+
     return Column(
       children: [
         SizedBox(
-          height: 200,
+          height: r.bannerHeight(),
+
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.banners.length,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../core/validators.dart';
 import '../widgets/status_dialog.dart';
-import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -63,7 +62,8 @@ class _RegisterPageState extends State<RegisterPage> {
           context,
           isSuccess: true,
           title: 'Account Created',
-          message: 'Registration successful! Please verify your email before logging in.',
+          message:
+              'Registration successful! Please verify your email before logging in.',
           onConfirm: () => Navigator.pop(context),
         );
       }

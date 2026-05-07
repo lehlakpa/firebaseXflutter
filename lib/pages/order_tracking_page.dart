@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/order_model.dart';
 import '../services/firestore_service.dart';
 import '../widgets/status_dialog.dart';
+import '../widgets/fade_in_slide.dart';
 
 class OrderTrackingPage extends StatelessWidget {
   final OrderModel order;
@@ -26,54 +27,64 @@ class OrderTrackingPage extends StatelessWidget {
         backgroundColor: themeBg,
         surfaceTintColor: themeBg,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStatusCard(cardBg, accent),
-            const SizedBox(height: 24),
-            Text(
-              'Order Items',
-              style: GoogleFonts.montserrat(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+      body: SafeArea(
+        child: FadeInSlide(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildStatusCard(cardBg, accent),
+                const SizedBox(height: 24),
+                Text(
+                  'Order Items',
+                  style: GoogleFonts.montserrat(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...order.items.map(
+                  (item) => _buildItemTile(item, cardBg, accent),
+                ),
+                const SizedBox(height: 24),
+                _buildOrderSummary(cardBg, accent),
+                const SizedBox(height: 24),
+                _buildShippingInfo(cardBg, accent),
+                const SizedBox(height: 24),
+                if (order.status.toLowerCase() == 'pending')
+                  _buildActionButton(
+                    context,
+                    'Cancel Order',
+                    Colors.redAccent.withAlpha(25),
+                    Colors.redAccent,
+                    () => _handleCancel(context),
+                  ),
+                if (order.status.toLowerCase() == 'cancelled' ||
+                    order.status.toLowerCase() == 'delivered')
+                  _buildActionButton(
+                    context,
+                    'Delete Order Record',
+                    Colors.white10,
+                    Colors.white54,
+                    () => _handleDelete(context),
+                  ),
+              ],
             ),
-            const SizedBox(height: 16),
-            ...order.items.map((item) => _buildItemTile(item, cardBg, accent)),
-            const SizedBox(height: 24),
-            _buildOrderSummary(cardBg, accent),
-            const SizedBox(height: 24),
-            _buildShippingInfo(cardBg, accent),
-            const SizedBox(height: 24),
-            if (order.status.toLowerCase() == 'pending')
-              _buildActionButton(
-                context,
-                'Cancel Order',
-                Colors.redAccent.withAlpha(25),
-                Colors.redAccent,
-                () => _handleCancel(context),
-              ),
-            if (order.status.toLowerCase() == 'cancelled' ||
-                order.status.toLowerCase() == 'delivered')
-              _buildActionButton(
-                context,
-                'Delete Order Record',
-                Colors.white10,
-                Colors.white54,
-                () => _handleDelete(context),
-              ),
-            const SizedBox(height: 32),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildActionButton(BuildContext context, String label, Color bg,
-      Color text, VoidCallback onTap) {
+  Widget _buildActionButton(
+    BuildContext context,
+    String label,
+    Color bg,
+    Color text,
+    VoidCallback onTap,
+  ) {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
@@ -88,10 +99,7 @@ class OrderTrackingPage extends StatelessWidget {
         onPressed: onTap,
         child: Text(
           label,
-          style: GoogleFonts.poppins(
-            color: text,
-            fontWeight: FontWeight.bold,
-          ),
+          style: GoogleFonts.poppins(color: text, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -160,13 +168,22 @@ class OrderTrackingPage extends StatelessWidget {
   }
 
   Future<bool> _showConfirmDialog(
-      BuildContext context, String title, String content) async {
+    BuildContext context,
+    String title,
+    String content,
+  ) async {
     return await showDialog(
           context: context,
           builder: (context) => AlertDialog(
             backgroundColor: const Color(0xFF121721),
-            title: Text(title, style: GoogleFonts.montserrat(color: Colors.white)),
-            content: Text(content, style: GoogleFonts.poppins(color: Colors.white70)),
+            title: Text(
+              title,
+              style: GoogleFonts.montserrat(color: Colors.white),
+            ),
+            content: Text(
+              content,
+              style: GoogleFonts.poppins(color: Colors.white70),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
@@ -217,12 +234,16 @@ class OrderTrackingPage extends StatelessWidget {
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: (order.status.toLowerCase() == 'cancelled'
-                          ? Colors.redAccent
-                          : accent)
-                      .withAlpha(25),
+                  color:
+                      (order.status.toLowerCase() == 'cancelled'
+                              ? Colors.redAccent
+                              : accent)
+                          .withAlpha(25),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -243,7 +264,11 @@ class OrderTrackingPage extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  const Icon(Icons.cancel_outlined, color: Colors.redAccent, size: 48),
+                  const Icon(
+                    Icons.cancel_outlined,
+                    color: Colors.redAccent,
+                    size: 48,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'Order Cancelled',
@@ -300,8 +325,9 @@ class OrderTrackingPage extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       color: isCompleted ? Colors.white : Colors.white38,
                       fontSize: 10,
-                      fontWeight:
-                          isCompleted ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isCompleted
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 ],
@@ -343,7 +369,10 @@ class OrderTrackingPage extends StatelessWidget {
                 width: 60,
                 height: 60,
                 color: Colors.white10,
-                child: const Icon(Icons.image_not_supported, color: Colors.white24),
+                child: const Icon(
+                  Icons.image_not_supported,
+                  color: Colors.white24,
+                ),
               ),
             ),
           ),
@@ -452,15 +481,23 @@ class OrderTrackingPage extends StatelessWidget {
           const SizedBox(height: 12),
           _summaryRow('Shipping', '\$0.00'),
           const Divider(height: 32, color: Colors.white10),
-          _summaryRow('Total', '\$${order.totalAmount.toStringAsFixed(2)}',
-              isTotal: true, accent: accent),
+          _summaryRow(
+            'Total',
+            '\$${order.totalAmount.toStringAsFixed(2)}',
+            isTotal: true,
+            accent: accent,
+          ),
         ],
       ),
     );
   }
 
-  Widget _summaryRow(String label, String value,
-      {bool isTotal = false, Color? accent}) {
+  Widget _summaryRow(
+    String label,
+    String value, {
+    bool isTotal = false,
+    Color? accent,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
